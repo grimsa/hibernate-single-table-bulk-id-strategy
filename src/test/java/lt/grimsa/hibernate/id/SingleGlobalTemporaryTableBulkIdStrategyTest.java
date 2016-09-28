@@ -47,7 +47,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategyTest extends BaseCoreFuncti
         sqlAppender = new MessageCapturingAppender();
         openSession();
         if (!ddlExecuted) {
-            doInTransaction(() -> session.createSQLQuery("create global temporary table HT_TEMP_IDS (ID CHAR(36), ENTITY_NAME VARCHAR(100))").executeUpdate());
+            doInTransaction(() -> session.createNativeQuery("create global temporary table HT_TEMP_IDS (ID CHAR(36), ENTITY_NAME VARCHAR(100))").executeUpdate());
             ddlExecuted = true;
         }
         sqlLogger.addAppender(sqlAppender);
@@ -57,8 +57,6 @@ public class SingleGlobalTemporaryTableBulkIdStrategyTest extends BaseCoreFuncti
     protected void cleanupTest() throws Exception {
         sqlLogger.removeAppender(sqlAppender);
     }
-
-
 
     @Test
     public void testDelete() {
@@ -76,7 +74,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategyTest extends BaseCoreFuncti
         });
 
         // then: entity was deleted
-        assertNull(session.byId(Human.class).load(human.id));
+        assertNull(session.find(Human.class, human.id));
 
         // then: expected SQL was generated
         assertEquals(
@@ -105,7 +103,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategyTest extends BaseCoreFuncti
         });
 
         // then: update was performed
-        assertEquals("someCoolValue", session.byId(Human.class).load(human.id).mammalField);
+        assertEquals("someCoolValue", session.find(Human.class, human.id).mammalField);
 
         // then: expected SQL was generated
         assertEquals(

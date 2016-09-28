@@ -11,7 +11,7 @@ import org.hibernate.engine.config.spi.StandardConverters;
 import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
-import org.hibernate.engine.spi.SessionImplementor;
+import org.hibernate.engine.spi.SharedSessionContractImplementor;
 import org.hibernate.hql.internal.ast.HqlSqlWalker;
 import org.hibernate.hql.internal.ast.tree.DeleteStatement;
 import org.hibernate.hql.internal.ast.tree.UpdateStatement;
@@ -84,7 +84,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
             }
 
             @Override
-            protected void releaseFromUse(Queryable persister, SessionImplementor session) {
+            protected void releaseFromUse(Queryable persister, SharedSessionContractImplementor session) {
                 if (cleanRows) {
                     cleanUpRows(session, targetedPersister);
                 }
@@ -111,7 +111,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
             }
 
             @Override
-            protected void releaseFromUse(Queryable persister, SessionImplementor session) {
+            protected void releaseFromUse(Queryable persister, SharedSessionContractImplementor session) {
                 if (cleanRows) {
                     cleanUpRows(session, persister);
                 }
@@ -119,7 +119,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
         };
     }
 
-    private void cleanUpRows(SessionImplementor session, Queryable persister) {
+    private void cleanUpRows(SharedSessionContractImplementor session, Queryable persister) {
         final String sql = "delete from " + fullyQualifiedTableName + " where " + discriminatorColumn + "=?";
         PreparedStatement ps = null;
         try {
@@ -128,7 +128,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
             StringType.INSTANCE.set(ps, generateDiscriminatorValue(persister), 1, session);
             session.getJdbcCoordinator().getResultSetReturn().executeUpdate(ps);
         } catch (SQLException e) {
-            throw session.getFactory().getJdbcServices().getSqlExceptionHelper().convert(e, "Unable to clean up id table [" + fullyQualifiedTableName + "]", sql);
+            throw session.getJdbcServices().getSqlExceptionHelper().convert(e, "Unable to clean up id table [" + fullyQualifiedTableName + "]", sql);
         } finally {
             if (ps != null) {
                 session.getJdbcCoordinator().getLogicalConnection().getResourceRegistry().release(ps);

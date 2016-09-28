@@ -46,7 +46,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategyRowCleanupTest extends Base
         sqlAppender = new MessageCapturingAppender();
         openSession();
         if (!ddlExecuted) {
-            doInTransaction(() -> session.createSQLQuery("create global temporary table HT_TEMP_IDS (ID CHAR(36), ENTITY_NAME VARCHAR(100))").executeUpdate());
+            doInTransaction(() -> session.createNativeQuery("create global temporary table HT_TEMP_IDS (ID CHAR(36), ENTITY_NAME VARCHAR(100))").executeUpdate());
             ddlExecuted = true;
         }
         sqlLogger.addAppender(sqlAppender);

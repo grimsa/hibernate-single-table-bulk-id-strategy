@@ -10,14 +10,14 @@ Can be useful in environments where DDL statements cannot be executed from appli
   <dependency>
     <groupId>com.github.grimsa.hibernate</groupId>
     <artifactId>single-table-bulk-id-strategy</artifactId>
-    <version>1.0</version>
+    <version>1.1</version>
   </dependency>
   ```
   For Gradle:
 
   ```
   dependencies {
-     compile 'com.github.grimsa.hibernate:single-table-bulk-id-strategy:1.0'
+     compile 'com.github.grimsa.hibernate:single-table-bulk-id-strategy:1.1'
   }
   ```
   
@@ -36,5 +36,5 @@ Can be useful in environments where DDL statements cannot be executed from appli
   ```
 
 ## Release history
-
-* 1.0 released 2016-09-29. Requires Hibernate 5.1 and JDK 1.8
+* 1.1 released 2016-09-29. Built for Hibernate 5.2
+* 1.0 released 2016-09-29. Built for Hibernate 5.1 and JDK 1.8
