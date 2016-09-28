@@ -7,6 +7,7 @@ import java.util.Objects;
 import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.boot.spi.SessionFactoryOptions;
 import org.hibernate.engine.config.spi.ConfigurationService;
+import org.hibernate.engine.config.spi.StandardConverters;
 import org.hibernate.engine.jdbc.connections.spi.JdbcConnectionAccess;
 import org.hibernate.engine.jdbc.spi.JdbcServices;
 import org.hibernate.engine.spi.SessionFactoryImplementor;
@@ -43,14 +44,21 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
      */
     public static final String DISCRIMINATOR_COLUMN = "hibernate.hql.bulk_id_strategy.single_global_temporary.discriminator_column";
 
+    /**
+     * Whether ID rows should be deleted after update/delete is processed. Defaults to {@code false}
+     */
+    public static final String CLEAN_ROWS = "hibernate.hql.bulk_id_strategy.single_global_temporary.clean_rows";
+
     private String fullyQualifiedTableName;
     private String discriminatorColumn;
+    private boolean cleanRows;
 
     @Override
     public void prepare(JdbcServices jdbcServices, JdbcConnectionAccess connectionAccess, MetadataImplementor metadata, SessionFactoryOptions sessionFactoryOptions) {
         ConfigurationService configService = sessionFactoryOptions.getServiceRegistry().getService(ConfigurationService.class);
         this.fullyQualifiedTableName = Objects.requireNonNull(configService.getSetting(TABLE, String.class, null), "Property " + TABLE + " must be set.");
         this.discriminatorColumn = Objects.requireNonNull(configService.getSetting(DISCRIMINATOR_COLUMN, String.class, null), "Property " + DISCRIMINATOR_COLUMN + " must be set.");
+        this.cleanRows = configService.getSetting(CLEAN_ROWS, StandardConverters.BOOLEAN, false);
     }
 
     @Override
@@ -77,7 +85,9 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
 
             @Override
             protected void releaseFromUse(Queryable persister, SessionImplementor session) {
-                cleanUpRows(session, targetedPersister);
+                if (cleanRows) {
+                    cleanUpRows(session, targetedPersister);
+                }
             }
         };
     }
@@ -102,7 +112,9 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
 
             @Override
             protected void releaseFromUse(Queryable persister, SessionImplementor session) {
-                cleanUpRows(session, persister);
+                if (cleanRows) {
+                    cleanUpRows(session, persister);
+                }
             }
         };
     }
