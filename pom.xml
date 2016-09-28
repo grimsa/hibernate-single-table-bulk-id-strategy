@@ -1,8 +1,33 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <groupId>lt.grimsa.hibernate</groupId>
+  <groupId>com.github.grimsa.hibernate</groupId>
   <artifactId>single-table-bulk-id-strategy</artifactId>
   <version>1.0</version>
+
+  <name>${project.groupId}:${project.artifactId}</name>
+  <description>Single Table Bulk ID Strategy for Hibernate</description>
+  <url>https://github.com/grimsa/hibernate-single-table-bulk-id-strategy</url>
+
+  <scm>
+    <connection>scm:git:https://github.com/grimsa/hibernate-single-table-bulk-id-strategy.git</connection>
+    <developerConnection>scm:git:git@github.com:grimsa/hibernate-single-table-bulk-id-strategy.git</developerConnection>
+    <url>https://github.com/grimsa/hibernate-single-table-bulk-id-strategy</url>
+  </scm>
+
+  <licenses>
+    <license>
+      <name>Public domain (Unlicense)</name>
+      <url>http://unlicense.org/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <name>Gediminas Rimsa</name>
+      <email>gediminas.rimsa@gmail.com</email>
+    </developer>
+  </developers>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,8 +43,6 @@
       <version>${hibernate-version}</version>
       <scope>provided</scope>
     </dependency>
-
-    <!-- Test dependencies -->
 
     <dependency>
       <groupId>org.hibernate</groupId>
@@ -42,5 +65,70 @@
       <scope>test</scope>
     </dependency>
   </dependencies>
+
+  <profiles>
+    <profile>
+      <id>release</id>
+
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <version>3.0.1</version>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar-no-fork</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-javadoc-plugin</artifactId>
+            <version>2.10.4</version>
+            <executions>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>1.6</version>
+            <executions>
+              <execution>
+                <id>sign-artifacts</id>
+                <phase>verify</phase>
+                <goals>
+                  <goal>sign</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+
+          <plugin>
+            <groupId>org.sonatype.plugins</groupId>
+            <artifactId>nexus-staging-maven-plugin</artifactId>
+            <version>1.6.7</version>
+            <extensions>true</extensions>
+            <configuration>
+              <serverId>ossrh</serverId>
+              <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+              <autoReleaseAfterClose>false</autoReleaseAfterClose>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

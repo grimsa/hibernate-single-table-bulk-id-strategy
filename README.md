@@ -4,7 +4,23 @@ Hibernate's MultiTableBulkIdStrategy for Hibernate using using just a single pre
 Can be useful in environments where DDL statements cannot be executed from application and managing a large number of ID tables is not practical.
 
 ## How to use
-1. Build this project and add it as a dependency.
+1. Add a dependency to your project. For Maven, use the following:
+
+  ```xml
+  <dependency>
+    <groupId>com.github.grimsa.hibernate</groupId>
+    <artifactId>single-table-bulk-id-strategy</artifactId>
+    <version>1.0</version>
+  </dependency>
+  ```
+  For Gradle:
+
+  ```
+  dependencies {
+     compile 'com.github.grimsa.hibernate:single-table-bulk-id-strategy:1.0'
+  }
+  ```
+  
 1. Create a shared global temporary table, e.g.
 
   ```
@@ -19,6 +35,6 @@ Can be useful in environments where DDL statements cannot be executed from appli
   configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.CLEAN_ROWS, "true");
   ```
 
-## Versions
-* Hibernate 5.1.0
-* JDK 1.8
+## Release history
+
+* 1.0 released 2016-09-29. Requires Hibernate 5.1 and JDK 1.8
