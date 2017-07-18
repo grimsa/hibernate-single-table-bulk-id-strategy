@@ -1,4 +1,7 @@
 # Single Global Temporary Table Bulk Id Strategy for Hibernate
+
+**Note: [Hibernate 5.2.8 added new Bulk Id strategies](http://in.relation.to/2017/02/01/non-temporary-table-bulk-id-strategies/), which make this project obselete for most cases.**
+
 Hibernate's MultiTableBulkIdStrategy for Hibernate using using just a single pre-created global temporary table instead of a table per entity.
 
 Can be useful in environments where DDL statements cannot be executed from application and managing a large number of ID tables is not practical.
@@ -26,7 +29,7 @@ Can be useful in environments where DDL statements cannot be executed from appli
   ```
   create global temporary table HT_TEMP_IDS (ID CHAR(36), ENTITY_NAME VARCHAR(100)); 
   ``` 
-1. Set the following Hibernate properties:
+2. Set the following Hibernate properties:
 
   ```
   configuration.setProperty(AvailableSettings.HQL_BULK_ID_STRATEGY, SingleGlobalTemporaryTableBulkIdStrategy.class.getName());
