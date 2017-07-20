@@ -3,6 +3,7 @@ package lt.grimsa.hibernate.id;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 import org.hibernate.boot.spi.MetadataImplementor;
 import org.hibernate.boot.spi.SessionFactoryOptions;
@@ -40,6 +41,12 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
     public static final String TABLE = "hibernate.hql.bulk_id_strategy.single_global_temporary.table";
 
     /**
+     * Column to be used as entity id. If not defined, we let Hibernate determine it based on the original entity id. <br/>
+     * Note that this will only work if there is only one id column.
+     */
+    public static final String ID_COLUMN = "hibernate.hql.bulk_id_strategy.single_global_temporary.id_column";
+
+    /**
      * Column to be used as entity discriminator
      */
     public static final String DISCRIMINATOR_COLUMN = "hibernate.hql.bulk_id_strategy.single_global_temporary.discriminator_column";
@@ -50,6 +57,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
     public static final String CLEAN_ROWS = "hibernate.hql.bulk_id_strategy.single_global_temporary.clean_rows";
 
     private String fullyQualifiedTableName;
+    private String idColumn;
     private String discriminatorColumn;
     private boolean cleanRows;
 
@@ -57,6 +65,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
     public void prepare(JdbcServices jdbcServices, JdbcConnectionAccess connectionAccess, MetadataImplementor metadata, SessionFactoryOptions sessionFactoryOptions) {
         ConfigurationService configService = sessionFactoryOptions.getServiceRegistry().getService(ConfigurationService.class);
         this.fullyQualifiedTableName = Objects.requireNonNull(configService.getSetting(TABLE, String.class, null), "Property " + TABLE + " must be set.");
+        this.idColumn = configService.getSetting(ID_COLUMN, String.class, null);
         this.discriminatorColumn = Objects.requireNonNull(configService.getSetting(DISCRIMINATOR_COLUMN, String.class, null), "Property " + DISCRIMINATOR_COLUMN + " must be set.");
         this.cleanRows = configService.getSetting(CLEAN_ROWS, StandardConverters.BOOLEAN, false);
     }
@@ -69,18 +78,17 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
     public UpdateHandler buildUpdateHandler(SessionFactoryImplementor factory, HqlSqlWalker walker) {
         final UpdateStatement updateStatement = (UpdateStatement) walker.getAST();
         final Queryable targetedPersister = updateStatement.getFromClause().getFromElement().getQueryable();
-        final String discriminator = generateDiscriminatorValue(targetedPersister);
 
         return new TableBasedUpdateHandlerImpl(factory, walker, this::getTableName) {
 
             @Override
             protected String generateIdSubselect(Queryable persister, IdTableInfo idTableInfo) {
-                return super.generateIdSubselect(persister, idTableInfo) + " where " + discriminatorColumn + "='" + discriminator + '\'';
+                return getIdSubselect(idTableInfo, () -> super.generateIdSubselect(persister, idTableInfo), targetedPersister);
             }
 
             @Override
             protected void addAnyExtraIdSelectValues(SelectValues selectClause) {
-                selectClause.addColumn(null, '\'' + discriminator + '\'', discriminatorColumn);
+                addExtraIdSelectValues(targetedPersister, selectClause);
             }
 
             @Override
@@ -96,18 +104,17 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
     public DeleteHandler buildDeleteHandler(SessionFactoryImplementor factory, HqlSqlWalker walker) {
         final DeleteStatement deleteStatement = (DeleteStatement) walker.getAST();
         final Queryable targetedPersister = deleteStatement.getFromClause().getFromElement().getQueryable();
-        final String discriminator = generateDiscriminatorValue(targetedPersister);
 
         return new TableBasedDeleteHandlerImpl(factory, walker, this::getTableName) {
 
             @Override
             protected String generateIdSubselect(Queryable persister, IdTableInfo idTableInfo) {
-                return super.generateIdSubselect(persister, idTableInfo) + " where " + discriminatorColumn + "='" + discriminator + '\'';
+                return getIdSubselect(idTableInfo, () -> super.generateIdSubselect(persister, idTableInfo), targetedPersister);
             }
 
             @Override
             protected void addAnyExtraIdSelectValues(SelectValues selectClause) {
-                selectClause.addColumn(null, '\'' + generateDiscriminatorValue(targetedPersister) + '\'', discriminatorColumn);
+                addExtraIdSelectValues(targetedPersister, selectClause);
             }
 
             @Override
@@ -138,6 +145,16 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
 
     protected String generateDiscriminatorValue(Queryable persister) {
         return persister.getEntityName();
+    }
+
+    protected String getIdSubselect(IdTableInfo idTableInfo, Supplier<String> idSubselectGenerator, Queryable persister) {
+        return String.format("%s where %s='%s'",
+                idColumn != null ? String.format("select %s from %s", idColumn, idTableInfo.getQualifiedIdTableName()) : idSubselectGenerator.get(), discriminatorColumn,
+                generateDiscriminatorValue(persister));
+    }
+
+    protected void addExtraIdSelectValues(final Queryable targetedPersister, SelectValues selectClause) {
+        selectClause.addColumn(null, '\'' + generateDiscriminatorValue(targetedPersister) + '\'', discriminatorColumn);
     }
 
     private String getTableName() {

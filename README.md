@@ -36,6 +36,8 @@ Can be useful in environments where DDL statements cannot be executed from appli
   configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.TABLE, "HT_TEMP_IDS");
   configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.DISCRIMINATOR_COLUMN, "ENTITY_NAME");
   configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.CLEAN_ROWS, "true");
+  /* optional, the original tables "id" column name(s) will be used if this is not provided */
+  configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.ID_COLUMN, "ID");
   ```
 
 ## Release history
