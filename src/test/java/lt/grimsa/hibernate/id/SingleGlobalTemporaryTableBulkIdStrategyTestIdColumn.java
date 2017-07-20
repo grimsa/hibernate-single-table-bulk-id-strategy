@@ -2,12 +2,25 @@ package lt.grimsa.hibernate.id;
 
 import model.TestEntities.Human;
 import model.TestEntities.Reptile;
+import org.hibernate.cfg.Configuration;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 
-public class SingleGlobalTemporaryTableBulkIdStrategyTest extends AbstractSingleGlobalTemporaryTableBulkIdStrategyTest {
+public class SingleGlobalTemporaryTableBulkIdStrategyTestIdColumn extends AbstractSingleGlobalTemporaryTableBulkIdStrategyTest {
+    private static final String CUSTOM_ID_COLUMN_NAME = "MY_ID";
+
+    @Override
+    protected void configure(Configuration configuration) {
+        super.configure(configuration);
+        configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.ID_COLUMN, CUSTOM_ID_COLUMN_NAME);
+    }
+
+    @Override
+    protected String getIdColumnName() {
+        return CUSTOM_ID_COLUMN_NAME;
+    }
 
     @Test
     public void testDelete() {
@@ -29,10 +42,10 @@ public class SingleGlobalTemporaryTableBulkIdStrategyTest extends AbstractSingle
 
         // then: expected SQL was generated
         verify(sqlLog -> sqlLog.get(0).equals("insert into HT_TEMP_IDS select testentiti0_.id as id, 'model.TestEntities$Mammal' as ENTITY_NAME from Mammal testentiti0_ inner join Animal testentiti0_1_ on testentiti0_.id=testentiti0_1_.id"));
-        verify(sqlLog -> sqlLog.contains("delete from Dog where (id) IN (select ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
-        verify(sqlLog -> sqlLog.contains("delete from Human where (id) IN (select ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
-        verify(sqlLog -> sqlLog.contains("delete from Mammal where (id) IN (select ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
-        verify(sqlLog -> sqlLog.contains("delete from Animal where (id) IN (select ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
+        verify(sqlLog -> sqlLog.contains("delete from Dog where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
+        verify(sqlLog -> sqlLog.contains("delete from Human where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
+        verify(sqlLog -> sqlLog.contains("delete from Mammal where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
+        verify(sqlLog -> sqlLog.contains("delete from Animal where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
         verify(sqlLog -> sqlLog.size() == 5);
     }
 
@@ -56,7 +69,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategyTest extends AbstractSingle
 
         // then: expected SQL was generated
         verify(sqlLog -> sqlLog.get(0).equals("insert into HT_TEMP_IDS select testentiti0_.id as id, 'model.TestEntities$Human' as ENTITY_NAME from Human testentiti0_ inner join Mammal testentiti0_1_ on testentiti0_.id=testentiti0_1_.id inner join Animal testentiti0_2_ on testentiti0_.id=testentiti0_2_.id"));
-        verify(sqlLog -> sqlLog.contains("update Mammal set mammalField='someCoolValue' where (id) IN (select ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Human')"));
+        verify(sqlLog -> sqlLog.contains("update Mammal set mammalField='someCoolValue' where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Human')"));
         verify(sqlLog -> sqlLog.size() == 2);
     }
 }

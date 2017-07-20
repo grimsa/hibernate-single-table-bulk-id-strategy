@@ -24,20 +24,22 @@ Can be useful in environments where DDL statements cannot be executed from appli
   }
   ```
   
-1. Create a shared global temporary table, e.g.
+2. Create a shared global temporary table, e.g.
 
   ```
-  create global temporary table HT_TEMP_IDS (ID CHAR(36), ENTITY_NAME VARCHAR(100)); 
-  ``` 
-2. Set the following Hibernate properties:
+  create global temporary table HT_TEMP_IDS (ID CHAR(36), ENTITY_NAME VARCHAR(100));
+  ```
+3. Set the following Hibernate properties:
 
   ```
   configuration.setProperty(AvailableSettings.HQL_BULK_ID_STRATEGY, SingleGlobalTemporaryTableBulkIdStrategy.class.getName());
   configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.TABLE, "HT_TEMP_IDS");
-  configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.DISCRIMINATOR_COLUMN, "ENTITY_NAME");
+  configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.ID_COLUMN, "ID");                      // This is new in 1.2
+  configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.DISCRIMINATOR_COLUMN, "ENTITY_NAME");  // This is default in 1.2
   configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.CLEAN_ROWS, "true");
   ```
 
 ## Release history
+* 1.2 to be released
 * 1.1 released 2016-09-29. Built for Hibernate 5.2
 * 1.0 released 2016-09-29. Built for Hibernate 5.1 and JDK 1.8
