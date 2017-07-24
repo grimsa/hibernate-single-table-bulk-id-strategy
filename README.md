@@ -13,14 +13,14 @@ Can be useful in environments where DDL statements cannot be executed from appli
   <dependency>
     <groupId>com.github.grimsa.hibernate</groupId>
     <artifactId>single-table-bulk-id-strategy</artifactId>
-    <version>1.1</version>
+    <version>1.2</version>
   </dependency>
   ```
   For Gradle:
 
   ```
   dependencies {
-     compile 'com.github.grimsa.hibernate:single-table-bulk-id-strategy:1.1'
+     compile 'com.github.grimsa.hibernate:single-table-bulk-id-strategy:1.2'
   }
   ```
   
@@ -32,14 +32,17 @@ Can be useful in environments where DDL statements cannot be executed from appli
 3. Set the following Hibernate properties:
 
   ```
-  configuration.setProperty(AvailableSettings.HQL_BULK_ID_STRATEGY, SingleGlobalTemporaryTableBulkIdStrategy.class.getName());
-  configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.TABLE, "HT_TEMP_IDS");
-  configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.ID_COLUMN, "ID");                      // This is new in 1.2
-  configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.DISCRIMINATOR_COLUMN, "ENTITY_NAME");  // This is default in 1.2
-  configuration.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.CLEAN_ROWS, "true");
+  config.setProperty(AvailableSettings.HQL_BULK_ID_STRATEGY, SingleGlobalTemporaryTableBulkIdStrategy.class.getName());
+  config.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.TABLE, "HT_TEMP_IDS");
+  config.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.ID_COLUMN, "ID");                      // "ID" is default
+  config.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.DISCRIMINATOR_COLUMN, "ENTITY_NAME");  // "ENTITY_NAME" is default
+  config.setProperty(SingleGlobalTemporaryTableBulkIdStrategy.CLEAN_ROWS, "true");
   ```
 
 ## Release history
-* 1.2 to be released
-* 1.1 released 2016-09-29. Built for Hibernate 5.2
-* 1.0 released 2016-09-29. Built for Hibernate 5.1 and JDK 1.8
+* 1.2 released 2017-07-24
+    * Support different ID column names in entities ([#1](https://github.com/grimsa/hibernate-single-table-bulk-id-strategy/issues/1))
+* 1.1 released 2016-09-29
+    * Update to support Hibernate 5.2
+* 1.0 released 2016-09-29
+    * Initial version built for Hibernate 5.1 and JDK 1.8
