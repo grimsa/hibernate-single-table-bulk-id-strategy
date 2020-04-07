@@ -1,5 +1,7 @@
 package model;
 
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Entity;
@@ -7,6 +9,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.ManyToMany;
+import javax.persistence.PrimaryKeyJoinColumn;
 
 /**
  * Nested classes model the following entity hierarchy:
@@ -44,8 +48,11 @@ public class TestEntities {
     public static class Reptile extends Animal {
     }
 
+    @PrimaryKeyJoinColumn(name = "human_id", referencedColumnName = "id")
     @Entity(name = "Human")
     public static class Human extends Mammal {
+      @ManyToMany
+      public Set<Dog> pets = new HashSet<>();
     }
 
     @Entity(name = "Dog")
