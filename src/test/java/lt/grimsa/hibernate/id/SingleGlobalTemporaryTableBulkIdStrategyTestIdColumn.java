@@ -2,6 +2,9 @@ package lt.grimsa.hibernate.id;
 
 import model.TestEntities.Human;
 import model.TestEntities.Reptile;
+
+import java.io.Serializable;
+
 import org.hibernate.cfg.Configuration;
 import org.junit.Test;
 
@@ -43,9 +46,34 @@ public class SingleGlobalTemporaryTableBulkIdStrategyTestIdColumn extends Abstra
         // then: expected SQL was generated
         verify(sqlLog -> sqlLog.get(0).equals("insert into HT_TEMP_IDS select testentiti0_.id as id, 'model.TestEntities$Mammal' as ENTITY_NAME from Mammal testentiti0_ inner join Animal testentiti0_1_ on testentiti0_.id=testentiti0_1_.id"));
         verify(sqlLog -> sqlLog.contains("delete from Dog where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
-        verify(sqlLog -> sqlLog.contains("delete from Human where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
+        verify(sqlLog -> sqlLog.contains("delete from Human where (human_id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
         verify(sqlLog -> sqlLog.contains("delete from Mammal where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
         verify(sqlLog -> sqlLog.contains("delete from Animal where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Mammal')"));
+        verify(sqlLog -> sqlLog.size() == 5);
+    }
+
+    @Test
+    public void testDeleteCleansUpRows_ManyToMany() {
+        // given
+        Human human = new Human();
+        doInTransaction(() -> {
+            Serializable id = session.save(human);
+            session.flush();
+
+            // when
+            doWithLogging(() -> session.createQuery("delete from Human where id = :id").setParameter("id", id).executeUpdate());
+            session.clear();
+        });
+
+        // then: entity was deleted
+        assertNull(session.find(Human.class, human.id));
+
+        // then: expected SQL was generated
+        verify(sqlLog -> sqlLog.get(0).equals("insert into HT_TEMP_IDS select testentiti0_.human_id as human_id, 'model.TestEntities$Human' as ENTITY_NAME from Human testentiti0_ inner join Mammal testentiti0_1_ on testentiti0_.human_id=testentiti0_1_.id inner join Animal testentiti0_2_ on testentiti0_.human_id=testentiti0_2_.id where testentiti0_.human_id=?"));
+        verify(sqlLog -> sqlLog.contains("delete from Human_Dog where (Human_human_id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Human')"));
+        verify(sqlLog -> sqlLog.contains("delete from Human where (human_id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Human')"));
+        verify(sqlLog -> sqlLog.contains("delete from Mammal where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Human')"));
+        verify(sqlLog -> sqlLog.contains("delete from Animal where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Human')"));
         verify(sqlLog -> sqlLog.size() == 5);
     }
 
@@ -68,7 +96,7 @@ public class SingleGlobalTemporaryTableBulkIdStrategyTestIdColumn extends Abstra
         assertEquals("someCoolValue", session.find(Human.class, human.id).mammalField);
 
         // then: expected SQL was generated
-        verify(sqlLog -> sqlLog.get(0).equals("insert into HT_TEMP_IDS select testentiti0_.id as id, 'model.TestEntities$Human' as ENTITY_NAME from Human testentiti0_ inner join Mammal testentiti0_1_ on testentiti0_.id=testentiti0_1_.id inner join Animal testentiti0_2_ on testentiti0_.id=testentiti0_2_.id"));
+        verify(sqlLog -> sqlLog.get(0).equals("insert into HT_TEMP_IDS select testentiti0_.human_id as human_id, 'model.TestEntities$Human' as ENTITY_NAME from Human testentiti0_ inner join Mammal testentiti0_1_ on testentiti0_.human_id=testentiti0_1_.id inner join Animal testentiti0_2_ on testentiti0_.human_id=testentiti0_2_.id"));
         verify(sqlLog -> sqlLog.contains("update Mammal set mammalField='someCoolValue' where (id) IN (select MY_ID from HT_TEMP_IDS where ENTITY_NAME='model.TestEntities$Human')"));
         verify(sqlLog -> sqlLog.size() == 2);
     }
