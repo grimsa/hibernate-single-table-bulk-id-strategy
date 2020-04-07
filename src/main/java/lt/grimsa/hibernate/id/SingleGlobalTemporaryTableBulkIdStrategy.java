@@ -20,6 +20,7 @@ import org.hibernate.hql.spi.id.MultiTableBulkIdStrategy;
 import org.hibernate.hql.spi.id.TableBasedDeleteHandlerImpl;
 import org.hibernate.hql.spi.id.TableBasedUpdateHandlerImpl;
 import org.hibernate.hql.spi.id.global.GlobalTemporaryTableBulkIdStrategy;
+import org.hibernate.persister.collection.AbstractCollectionPersister;
 import org.hibernate.persister.entity.Queryable;
 import org.hibernate.sql.SelectValues;
 import org.hibernate.type.StringType;
@@ -107,6 +108,11 @@ public class SingleGlobalTemporaryTableBulkIdStrategy implements MultiTableBulkI
 
             @Override
             protected String generateIdSubselect(Queryable persister, IdTableInfo idTableInfo) {
+                return getTempTableIdSubselect(idTableInfo, targetedPersister);
+            }
+
+            @Override
+            protected String generateIdSubselect(Queryable persister, AbstractCollectionPersister cPersister, IdTableInfo idTableInfo) {
                 return getTempTableIdSubselect(idTableInfo, targetedPersister);
             }
 
