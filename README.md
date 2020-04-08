@@ -1,6 +1,6 @@
 # Single Global Temporary Table Bulk Id Strategy for Hibernate
 
-**Note: [Hibernate 5.2.8 added new Bulk Id strategies](http://in.relation.to/2017/02/01/non-temporary-table-bulk-id-strategies/), which make this project obselete for most cases.**
+**Note: [Hibernate 5.2.8 added new Bulk Id strategies](http://in.relation.to/2017/02/01/non-temporary-table-bulk-id-strategies/), which make this project obsolete for most cases.**
 
 Hibernate's MultiTableBulkIdStrategy for Hibernate using using just a single pre-created global temporary table instead of a table per entity.
 
@@ -13,14 +13,14 @@ Can be useful in environments where DDL statements cannot be executed from appli
   <dependency>
     <groupId>com.github.grimsa.hibernate</groupId>
     <artifactId>single-table-bulk-id-strategy</artifactId>
-    <version>1.2</version>
+    <version>1.3</version>
   </dependency>
   ```
   For Gradle:
 
   ```
   dependencies {
-     compile 'com.github.grimsa.hibernate:single-table-bulk-id-strategy:1.2'
+     compile 'com.github.grimsa.hibernate:single-table-bulk-id-strategy:1.3'
   }
   ```
   
@@ -40,6 +40,9 @@ Can be useful in environments where DDL statements cannot be executed from appli
   ```
 
 ## Release history
+* 1.3 released 2020-04-08
+    * Added support for overridden table ID columns when deleting from many-to-many join tables([#3](https://github.com/grimsa/hibernate-single-table-bulk-id-strategy/issues/3))
+    * Upgraded Hibernate to 5.4.12
 * 1.2 released 2017-07-24
     * Support different ID column names in entities ([#1](https://github.com/grimsa/hibernate-single-table-bulk-id-strategy/issues/1))
 * 1.1 released 2016-09-29
