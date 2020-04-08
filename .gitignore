@@ -5,3 +5,10 @@ target/
 .classpath
 .project
 .settings/
+
+# IDEA
+/.idea/
+/out/
+*.iml
+*.ipr
+*.iws
